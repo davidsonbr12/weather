@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "weather": {
+      "type": "stdio",
+      "command": "/Users/briandavidson/workspaces/weather/bin/Debug/net10.0/weather"
+    }
+  }
+}
