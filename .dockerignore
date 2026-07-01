@@ -1,0 +1,14 @@
+# Build artifacts
+**/bin/
+**/obj/
+
+# VCS and IDE
+.git/
+.gitignore
+.idea/
+.vs/
+*.user
+
+# Docker
+Dockerfile
+.dockerignore
