@@ -4,6 +4,8 @@ A proof-of-concept [Model Context Protocol](https://modelcontextprotocol.io/) se
 
 It runs over **stdio** and exposes its capabilities as MCP tools that any MCP client (Claude Desktop, Claude Code, etc.) can call.
 
+> **Status: proof of concept.** This project exists **strictly as a proof of concept for working with Warp / Oz** and is not intended for production use.
+
 ## Data sources
 
 All data sources are free and require **no API key**:
@@ -44,6 +46,20 @@ dotnet run
 
 The server communicates over stdio, so it is normally launched by an MCP client rather than run interactively.
 
+## Run with Docker
+
+For portability the server can also run in a container. Build the image:
+
+```bash
+docker build -t weather-climate-mcp .
+```
+
+MCP communicates over stdio, so run the container with `-i` to keep stdin attached:
+
+```bash
+docker run --rm -i weather-climate-mcp
+```
+
 ## Use with an MCP client
 
 `.mcp.json` registers the server:
@@ -54,6 +70,19 @@ The server communicates over stdio, so it is normally launched by an MCP client 
     "weather": {
       "command": "dotnet",
       "args": ["run", "--project", "/Users/briandavidson/workspaces/weather"]
+    }
+  }
+}
+```
+
+Or, using the Docker image:
+
+```json
+{
+  "mcpServers": {
+    "weather": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "weather-climate-mcp"]
     }
   }
 }
@@ -85,3 +114,4 @@ dotnet test tests/weather.Tests.csproj
 - `WeatherClients.cs` — named `HttpClient` registrations (shared with tests).
 - `Tools/` — tool implementations grouped by capability, plus JSON/formatting helpers.
 - `tests/` — xUnit integration tests.
+- `Dockerfile` / `.dockerignore` — containerized build and run.
