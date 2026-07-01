@@ -1,3 +1,4 @@
+using ModelContextProtocol;
 using ModelContextProtocol.Server;
 using System.ComponentModel;
 using System.Globalization;
@@ -6,16 +7,15 @@ using System.Text.Json;
 namespace QuickstartWeatherServer.Tools;
 
 [McpServerToolType]
-public static class WeatherTools
+public sealed class WeatherTools(IHttpClientFactory httpClientFactory)
 {
-    [McpServerTool, Description("Get weather alerts for a US state code.")]
-    public static async Task<string> GetAlerts(
-        HttpClient client,
-        [Description("The US state code to get alerts for.")] string state)
+    [McpServerTool, Description("Get active weather alerts for a US state (US National Weather Service; United States only).")]
+    public async Task<string> GetAlerts(
+        [Description("The US state code to get alerts for, e.g. 'CA' or 'NY'.")] string state)
     {
+        var client = httpClientFactory.CreateClient("nws");
         using var jsonDocument = await client.ReadJsonDocumentAsync($"/alerts/active/area/{state}");
-        var jsonElement = jsonDocument.RootElement;
-        var alerts = jsonElement.GetProperty("features").EnumerateArray();
+        var alerts = jsonDocument.RootElement.GetProperty("features").EnumerateArray();
 
         if (!alerts.Any())
         {
@@ -35,16 +35,16 @@ public static class WeatherTools
         }));
     }
 
-    [McpServerTool, Description("Get weather forecast for a location.")]
-    public static async Task<string> GetForecast(
-        HttpClient client,
+    [McpServerTool, Description("Get a detailed multi-day weather forecast for a US location (US National Weather Service; United States only). For locations outside the US, use GetGlobalForecast.")]
+    public async Task<string> GetForecast(
         [Description("Latitude of the location.")] double latitude,
         [Description("Longitude of the location.")] double longitude)
     {
+        var client = httpClientFactory.CreateClient("nws");
         var pointUrl = string.Create(CultureInfo.InvariantCulture, $"/points/{latitude},{longitude}");
         using var jsonDocument = await client.ReadJsonDocumentAsync(pointUrl);
         var forecastUrl = jsonDocument.RootElement.GetProperty("properties").GetProperty("forecast").GetString()
-            ?? throw new Exception($"No forecast URL provided by {client.BaseAddress}points/{latitude},{longitude}");
+            ?? throw new McpException($"No forecast URL available for points/{latitude},{longitude}");
 
         using var forecastDocument = await client.ReadJsonDocumentAsync(forecastUrl);
         var periods = forecastDocument.RootElement.GetProperty("properties").GetProperty("periods").EnumerateArray();

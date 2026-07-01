@@ -7,8 +7,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- The test project lives under tests/; keep its sources out of this project. -->
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.9" />
     <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
   </ItemGroup>
 
